@@ -14,11 +14,22 @@ var globalConfig *Configure
 
 // Config ...
 func Config() *Configure {
+	if globalConfig == nil {
+		return DefaultConfig("")
+	}
 	return globalConfig
 }
 
 // REST ...
 type REST struct {
+	Enable bool   `toml:"enable"`
+	Type   string `toml:"type"`
+	Path   string `toml:"path"`
+	Port   string `toml:"port"`
+}
+
+// REST ...
+type GRPC struct {
 	Enable bool   `toml:"enable"`
 	Type   string `toml:"type"`
 	Path   string `toml:"path"`
@@ -54,6 +65,7 @@ type Configure struct {
 	WebToken WebToken `toml:"web_token"`
 	Database Database `toml:"database"`
 	REST     REST     `toml:"rest"`
+	GRPC     GRPC     `toml:"grpc"`
 }
 
 // Initialize ...

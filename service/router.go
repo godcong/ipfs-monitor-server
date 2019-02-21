@@ -4,8 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/godcong/wego-auth-manager/controller"
 	"github.com/godcong/wego-auth-manager/middleware"
-	"github.com/swaggo/gin-swagger"
-	"github.com/swaggo/gin-swagger/swaggerFiles"
 )
 
 // Handle ...
@@ -34,18 +32,9 @@ func NewRouteLoader(version string) *RouteLoader {
 
 func (l *RouteLoader) router(eng *gin.Engine) {
 	eng.Use(middleware.VisitLog(l.Version))
-	eng.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v0 := eng.Group(l.Version)
 
-	notify := v0.Group("notify")
-	notify.POST("/:sign/:backType/*uri", controller.NotifyServer(l.Version))
-
-	payment := v0.Group("payment")
-	payment.POST("/:sign/:payType", controller.NotifyPaymentUnify(l.Version))
-
-	v0.POST("login", controller.UserLogin(l.Version))
-	v0.POST("register", controller.UserRegister(l.Version))
 	//超级管理员面板
 	//账号、密码、所属组织、角色权限、邮箱、手机号码、授权证书和授权私钥
 	dashboard := v0.Group("dashboard", middleware.AuthCheck(l.Version), middleware.PermissionCheck(l.Version))

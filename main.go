@@ -2,9 +2,11 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	"github.com/godcong/ipfs-monitor-server/config"
+	"github.com/godcong/ipfs-monitor-server/service"
+	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
-	"io"
+	"gopkg.in/sohlich/elogrus.v3"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -15,20 +17,20 @@ var configPath = flag.String("config", "config.toml", "config path")
 var logPath = flag.String("log", "monitor.log", "log path")
 
 func main() {
-
 	flag.Parse()
-
 	dir, _ := filepath.Split(*logPath)
 	_ = os.MkdirAll(dir, os.ModePerm)
 
-	file, err := os.OpenFile(*logPath, os.O_SYNC|os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
+	_, err := os.OpenFile(*logPath, os.O_SYNC|os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
 	if err != nil {
 		panic(err)
 	}
 
-	log.SetOutput(io.MultiWriter(file, os.Stdout))
+	initLog()
+	log.SetReportCaller(true)
+	log.SetFormatter(&log.JSONFormatter{})
 
-	err = config.Initialize(*configPath)
+	err = config.Initialize(os.Args[0], *configPath)
 	if err != nil {
 		panic(err)
 	}
@@ -38,14 +40,27 @@ func main() {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	//start
-	service.Start()
+	service.Start(config.Config())
 
 	go func() {
 		sig := <-sigs
-		fmt.Println(sig, "exiting")
+		log.Println(sig, "exiting")
 		service.Stop()
 		done <- true
 	}()
 	<-done
 
+}
+
+func initLog() {
+	client, err := elastic.NewClient(elastic.SetSniff(false), elastic.SetURL("http://localhost:9200"))
+	if err != nil {
+		log.Panic(err)
+	}
+
+	t, err := elogrus.NewElasticHook(client, "localhost", log.TraceLevel, "ipfs-cluster-monitor")
+	if err != nil {
+		log.Panic(err)
+	}
+	log.AddHook(t)
 }
