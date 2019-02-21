@@ -3,7 +3,10 @@ package config
 import (
 	"fmt"
 	"github.com/pelletier/go-toml"
+	log "github.com/sirupsen/logrus"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -11,12 +14,6 @@ var globalConfig *Configure
 
 // Config ...
 func Config() *Configure {
-	return globalConfig
-}
-
-// InitConfig ...
-func InitConfig(path string) *Configure {
-	globalConfig = initLoader(path)
 	return globalConfig
 }
 
@@ -47,36 +44,56 @@ func (d *Database) Source() string {
 		d.Username, d.Password, d.Addr, d.Port, d.Schema, d.Location, d.Charset)
 }
 
-// General ...
-type General struct {
-	TokenKey string `toml:"token_key"`
+// WebToken ...
+type WebToken struct {
+	Key string `toml:"key"`
 }
 
 // Configure ...
 type Configure struct {
-	General  General  `toml:"general"`
+	WebToken WebToken `toml:"web_token"`
 	Database Database `toml:"database"`
 	REST     REST     `toml:"rest"`
 }
 
-func initLoader(path string) *Configure {
-	var cfg Configure
-	tree, err := toml.LoadFile(path)
-	if err != nil {
-		return DefaultConfig()
+// Initialize ...
+func Initialize(runPath string, configPath ...string) error {
+	log.Info(runPath, configPath)
+	s, e := filepath.Abs(filepath.Dir(runPath))
+	if e != nil {
+		s = ""
 	}
-	err = tree.Unmarshal(&cfg)
+	log.Info(s)
+	globalConfig = DefaultConfig(s)
+
+	globalConfig.LoadConfig(configPath[0])
+	//globalConfig.ConfigPath, globalConfig.ConfigName = filepath.Split(configPath[0])
+	return nil
+}
+
+// LoadConfig ...
+func (c *Configure) LoadConfig(filePath string) *Configure {
+	openFile, err := os.OpenFile(filePath, os.O_RDONLY|os.O_SYNC, os.ModePerm)
 	if err != nil {
-		return DefaultConfig()
+		log.Error("config open:", err)
+		return c
 	}
-	return &cfg
+	defer openFile.Close()
+	decoder := toml.NewDecoder(openFile)
+	err = decoder.Decode(c)
+	if err != nil {
+		log.Error("config decode:", err)
+		return c
+	}
+	log.Debugf("config: %+v", c)
+	return c
 }
 
 // DefaultConfig ...
-func DefaultConfig() *Configure {
+func DefaultConfig(runPath string) *Configure {
 	return &Configure{
-		General: General{
-			TokenKey: "im-godcong-yl",
+		WebToken: WebToken{
+			Key: "im-godcong-yelion",
 		},
 		Database: Database{
 			ShowSQL:  true,
