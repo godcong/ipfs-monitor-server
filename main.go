@@ -2,11 +2,11 @@ package main
 
 import (
 	"flag"
+	"github.com/godcong/elogrus"
 	"github.com/godcong/ipfs-monitor-server/config"
 	"github.com/godcong/ipfs-monitor-server/service"
 	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/sohlich/elogrus.v3"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -14,23 +14,14 @@ import (
 )
 
 var configPath = flag.String("config", "config.toml", "config path")
-var logPath = flag.String("log", "monitor.log", "log path")
+var logPath = flag.String("log", "", "log path")
 
 func main() {
 	flag.Parse()
-	dir, _ := filepath.Split(*logPath)
-	_ = os.MkdirAll(dir, os.ModePerm)
 
-	_, err := os.OpenFile(*logPath, os.O_SYNC|os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
-	if err != nil {
-		panic(err)
-	}
+	initLog(*logPath)
 
-	initLog()
-	log.SetReportCaller(true)
-	log.SetFormatter(&log.JSONFormatter{})
-
-	err = config.Initialize(os.Args[0], *configPath)
+	err := config.Initialize(os.Args[0], *configPath)
 	if err != nil {
 		panic(err)
 	}
@@ -52,15 +43,30 @@ func main() {
 
 }
 
-func initLog() {
+func initLog(logPath string) {
+
 	client, err := elastic.NewClient(elastic.SetSniff(false), elastic.SetURL("http://localhost:9200"))
 	if err != nil {
 		log.Panic(err)
 	}
 
-	t, err := elogrus.NewElasticHook(client, "localhost", log.TraceLevel, "ipfs-cluster-monitor")
+	t, err := elogrus.NewElasticHook(client, "localhost", log.TraceLevel, "ipfs-monitor-server")
 	if err != nil {
 		log.Panic(err)
 	}
 	log.AddHook(t)
+
+	log.SetReportCaller(true)
+	log.SetFormatter(&log.JSONFormatter{})
+
+	if logPath != "" {
+		dir, _ := filepath.Split(logPath)
+		_ = os.MkdirAll(dir, os.ModePerm)
+		file, err := os.OpenFile(logPath, os.O_SYNC|os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
+		if err != nil {
+			log.Error(err)
+		} else {
+			log.SetOutput(file)
+		}
+	}
 }
