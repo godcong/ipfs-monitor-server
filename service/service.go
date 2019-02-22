@@ -4,8 +4,9 @@ import "github.com/godcong/ipfs-monitor-server/config"
 
 // Service ...
 type Service struct {
-	config *config.Configure
-	rest   *RestServer
+	config  *config.Configure
+	rest    *RestServer
+	monitor *GRPCServer
 }
 
 var globalService *Service
@@ -13,8 +14,9 @@ var globalService *Service
 // New ...
 func New(cfg *config.Configure) *Service {
 	return &Service{
-		config: cfg,
-		rest:   NewRestServer(cfg),
+		config:  cfg,
+		monitor: NewGRPCServer(cfg),
+		rest:    NewRestServer(cfg),
 	}
 }
 

@@ -108,7 +108,7 @@ func NewGRPCServer(cfg *config.Configure) *GRPCServer {
 		redis:  NewIPFSServiceRedis(),
 		Type:   config.MustString("", GRPCType),
 		Port:   config.MustString("", ":7784"),
-		Path:   config.MustString("", "/tmp/monitor.sock"),
+		Path:   config.MustString("", ""),
 	}
 }
 
