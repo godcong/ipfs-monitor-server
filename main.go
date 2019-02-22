@@ -2,14 +2,12 @@ package main
 
 import (
 	"flag"
-	"github.com/godcong/elogrus"
+	"github.com/godcong/go-trait"
 	"github.com/godcong/ipfs-monitor-server/config"
 	"github.com/godcong/ipfs-monitor-server/service"
-	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"syscall"
 )
 
@@ -19,7 +17,7 @@ var logPath = flag.String("log", "", "log path")
 func main() {
 	flag.Parse()
 
-	initLog(*logPath)
+	trait.InitElasticLog("ipfs-monitor-server", nil)
 
 	err := config.Initialize(os.Args[0], *configPath)
 	if err != nil {
@@ -41,32 +39,4 @@ func main() {
 	}()
 	<-done
 
-}
-
-func initLog(logPath string) {
-
-	client, err := elastic.NewClient(elastic.SetSniff(false), elastic.SetURL("http://localhost:9200"))
-	if err != nil {
-		log.Panic(err)
-	}
-
-	t, err := elogrus.NewElasticHook(client, "localhost", log.TraceLevel, "ipfs-monitor-server")
-	if err != nil {
-		log.Panic(err)
-	}
-	log.AddHook(t)
-
-	log.SetReportCaller(true)
-	log.SetFormatter(&log.JSONFormatter{})
-
-	if logPath != "" {
-		dir, _ := filepath.Split(logPath)
-		_ = os.MkdirAll(dir, os.ModePerm)
-		file, err := os.OpenFile(logPath, os.O_SYNC|os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
-		if err != nil {
-			log.Error(err)
-		} else {
-			log.SetOutput(file)
-		}
-	}
 }

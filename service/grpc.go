@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"github.com/go-redis/redis"
 	"github.com/godcong/ipfs-monitor-server/config"
 	"github.com/godcong/ipfs-monitor-server/proto"
 
@@ -23,6 +24,7 @@ import (
 type GRPCServer struct {
 	config                   *config.Configure
 	server                   *grpc.Server
+	redis                    *redis.Client
 	requireTransportSecurity bool
 	Type                     string
 	Port                     string
@@ -30,7 +32,13 @@ type GRPCServer struct {
 }
 
 func (s *GRPCServer) MonitorAddress(context.Context, *proto.MonitorRequest) (*proto.MonitorAddressReply, error) {
-	panic("implement me")
+	strings, e := s.redis.LRange("ipfs.swarm.address", 0, -1).Result()
+	if e != nil {
+		return &proto.MonitorAddressReply{}, e
+	}
+	return &proto.MonitorAddressReply{
+		Addresses: strings,
+	}, nil
 }
 
 //MonitorManager ...
@@ -53,20 +61,24 @@ func (s *GRPCServer) MonitorBootstrap(context.Context, *proto.MonitorRequest) (*
 
 // MonitorPin ...
 func (s *GRPCServer) MonitorPin(context.Context, *proto.MonitorRequest) (*proto.MonitorPinReply, error) {
+	strings, e := s.redis.LRange("ipfs.pins", 0, -1).Result()
+	if e != nil {
+		return &proto.MonitorPinReply{}, e
+	}
 	return &proto.MonitorPinReply{
-		Pins: nil,
+		Pins: strings,
 	}, nil
 }
 
 // MonitorInit ...
 func (s *GRPCServer) MonitorInit(ctx context.Context, req *proto.MonitorInitRequest) (*proto.MonitorReply, error) {
-	log.Println("monitor init call")
+	log.Info("monitor init call")
 	return Result("")
 }
 
 // MonitorProc ...
 func (s *GRPCServer) MonitorProc(ctx context.Context, req *proto.MonitorProcRequest) (*proto.MonitorReply, error) {
-	log.Println("monitor proc call")
+	log.Info("monitor proc call")
 	return Result("")
 }
 
@@ -92,6 +104,7 @@ func NewGRPCServer(cfg *config.Configure) *GRPCServer {
 	return &GRPCServer{
 		config: cfg,
 		server: grpc.NewServer(),
+		redis:  NewIPFSServiceRedis(),
 		Type:   config.MustString("", GRPCType),
 		Port:   config.MustString("", ":7784"),
 		Path:   config.MustString("", "/tmp/monitor.sock"),
