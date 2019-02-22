@@ -31,8 +31,9 @@ type GRPCServer struct {
 	Path                     string
 }
 
+// MonitorAddress ...
 func (s *GRPCServer) MonitorAddress(context.Context, *proto.MonitorRequest) (*proto.MonitorAddressReply, error) {
-	strings, e := s.redis.LRange("ipfs.swarm.address", 0, -1).Result()
+	strings, e := s.redis.LRange(RedisKeyNameIPFSSwarmAddress, 0, -1).Result()
 	if e != nil {
 		return &proto.MonitorAddressReply{}, e
 	}
@@ -61,7 +62,7 @@ func (s *GRPCServer) MonitorBootstrap(context.Context, *proto.MonitorRequest) (*
 
 // MonitorPin ...
 func (s *GRPCServer) MonitorPin(context.Context, *proto.MonitorRequest) (*proto.MonitorPinReply, error) {
-	strings, e := s.redis.LRange("ipfs.pins", 0, -1).Result()
+	strings, e := s.redis.LRange(RedisKeyNameIPFSPins, 0, -1).Result()
 	if e != nil {
 		return &proto.MonitorPinReply{}, e
 	}

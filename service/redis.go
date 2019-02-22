@@ -10,7 +10,14 @@ const RedisQueueIndex = 1
 // RedisKeyStoreIndex ...
 const RedisKeyStoreIndex = 2
 
+// RedisIPFSServiceIndex ...
 const RedisIPFSServiceIndex = 3
+
+// RedisKeyNameIPFSPins ...
+const RedisKeyNameIPFSPins = "ipfs.pins"
+
+// RedisKeyNameIPFSSwarmAddress ...
+const RedisKeyNameIPFSSwarmAddress = "ipfs.swarm.address"
 
 var store *redis.Client
 
@@ -24,6 +31,7 @@ func NewRedisQueue() *redis.Client {
 	return newRedisWithDB(RedisQueueIndex)
 }
 
+// NewIPFSServiceRedis ...
 func NewIPFSServiceRedis() *redis.Client {
 	return newRedisWithDB(RedisIPFSServiceIndex)
 }
