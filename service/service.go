@@ -23,6 +23,7 @@ func New(cfg *config.Configure) *Service {
 // Start ...
 func Start(cfg *config.Configure) {
 	globalService = New(cfg)
+	globalService.monitor.Start()
 	globalService.rest.Start()
 }
 

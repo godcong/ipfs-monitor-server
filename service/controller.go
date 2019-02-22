@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -15,10 +16,36 @@ type CodeMessage struct {
 // MonitorAddress ...
 func MonitorAddress(ver string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var detail []string
-
-		Success(ctx, detail)
+		strings, e := store.LRange(RedisKeyNameIPFSSwarmAddress, 0, -1).Result()
+		if e != nil {
+			logrus.Error(e)
+			Error(ctx, e)
+			return
+		}
+		Success(ctx, strings)
 	}
+}
+
+// MonitorPins ...
+func MonitorPins(ver string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		strings, e := store.LRange(RedisKeyNameIPFSPins, 0, -1).Result()
+		if e != nil {
+			logrus.Error(e)
+			Error(ctx, e)
+			return
+		}
+		Success(ctx, strings)
+	}
+}
+
+// Success ...
+func Error(ctx *gin.Context, e error) {
+	ctx.JSON(http.StatusOK, &CodeMessage{
+		Code:    -1,
+		Message: e.Error(),
+		Detail:  nil,
+	})
 }
 
 // Success ...

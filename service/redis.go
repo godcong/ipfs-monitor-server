@@ -50,3 +50,8 @@ func newRedisWithDB(idx int) *redis.Client {
 	}
 	return client
 }
+
+// InitRedis ...
+func InitRedis(c *redis.Client) {
+	store = c
+}

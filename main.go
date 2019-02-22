@@ -28,6 +28,7 @@ func main() {
 	done := make(chan bool, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
+	service.InitRedis(service.NewIPFSServiceRedis())
 	//start
 	service.Start(config.Config())
 
