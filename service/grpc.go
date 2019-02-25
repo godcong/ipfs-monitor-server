@@ -107,7 +107,7 @@ func NewGRPCServer(cfg *config.Configure) *GRPCServer {
 		server: grpc.NewServer(),
 		redis:  store,
 		Type:   config.MustString("", GRPCType),
-		Port:   config.MustString("", ":7784"),
+		Port:   config.MustString("", ":7774"),
 		Path:   config.MustString("", ""),
 	}
 }

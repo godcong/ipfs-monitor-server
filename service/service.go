@@ -29,5 +29,6 @@ func Start(cfg *config.Configure) {
 
 // Stop ...
 func Stop() {
+	globalService.monitor.Stop()
 	globalService.rest.Stop()
 }
