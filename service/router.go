@@ -61,8 +61,10 @@ func (l *RouteLoader) router(eng *gin.Engine) {
 
 	l.Register(monitor.GET, "pins", MonitorPinsList)
 	l.Register(monitor.POST, "pins", MonitorPinsAdd)
+	l.Register(monitor.DELETE, "pins", MonitorPinsDelete)
 	l.Register(monitor.GET, "address", MonitorAddressList)
 	l.Register(monitor.POST, "address", MonitorAddressAdd)
+	l.Register(monitor.DELETE, "address", MonitorAddressDelete)
 	for _, v := range l.routers {
 		v.Handle(v.Name, v.HandleFunc(l.Version))
 	}
