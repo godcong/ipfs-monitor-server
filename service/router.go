@@ -59,9 +59,10 @@ func (l *RouteLoader) router(eng *gin.Engine) {
 	//r0.GET("permission/:id/role", controller.PermissionRoleList(version))
 	//r0.GET("permission/:id/user", controller.PermissionUserList(version))
 
-	l.Register(monitor.GET, "pins", MonitorPins)
-	l.Register(monitor.GET, "address", MonitorAddress)
-
+	l.Register(monitor.GET, "pins", MonitorPinsList)
+	l.Register(monitor.POST, "pins", MonitorPinsAdd)
+	l.Register(monitor.GET, "address", MonitorAddressList)
+	l.Register(monitor.POST, "address", MonitorAddressAdd)
 	for _, v := range l.routers {
 		v.Handle(v.Name, v.HandleFunc(l.Version))
 	}
