@@ -2,8 +2,6 @@ package service
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/godcong/wego-auth-manager/controller"
-	"github.com/godcong/wego-auth-manager/middleware"
 )
 
 // Handle ...
@@ -31,14 +29,13 @@ func NewRouteLoader(version string) *RouteLoader {
 }
 
 func (l *RouteLoader) router(eng *gin.Engine) {
-	eng.Use(middleware.VisitLog(l.Version))
 
 	v0 := eng.Group(l.Version)
 
 	//超级管理员面板
 	//账号、密码、所属组织、角色权限、邮箱、手机号码、授权证书和授权私钥
-	dashboard := v0.Group("dashboard", middleware.AuthCheck(l.Version), middleware.PermissionCheck(l.Version))
-	//dashboard.Use(middleware.AuthCheck(l.Version), middleware.PermissionCheck(l.Version))
+	monitor := v0.Group("monitor")
+	//monitor.Use(middleware.AuthCheck(l.Version), middleware.PermissionCheck(l.Version))
 
 	//r0.POST("user", controller.UserAdd(version))
 	//r0.GET("user", controller.UserList(version))
@@ -62,39 +59,8 @@ func (l *RouteLoader) router(eng *gin.Engine) {
 	//r0.GET("permission/:id/role", controller.PermissionRoleList(version))
 	//r0.GET("permission/:id/user", controller.PermissionUserList(version))
 
-	l.Register(dashboard.POST, "user", controller.UserAdd)
-	l.Register(dashboard.GET, "user", controller.UserList)
-	l.Register(dashboard.POST, "user/:id", controller.UserUpdate)
-	l.Register(dashboard.GET, "user/:id", controller.UserShow)
-	l.Register(dashboard.DELETE, "user/:id", controller.UserDelete)
-	l.Register(dashboard.GET, "user/:id/role", controller.UserRoleList)
-	l.Register(dashboard.POST, "user/:id/role/:rid", controller.UserRoleAdd)
-	l.Register(dashboard.GET, "user/:id/permission", controller.UserPermissionList)
-	l.Register(dashboard.POST, "role", controller.RoleAdd)
-	l.Register(dashboard.GET, "role", controller.RoleList)
-	l.Register(dashboard.POST, "role/:id", controller.RoleUpdate)
-	l.Register(dashboard.GET, "role/:id", controller.RoleShow)
-	l.Register(dashboard.DELETE, "role/:id", controller.RoleDelete)
-	l.Register(dashboard.GET, "role/:id/permission", controller.RolePermissionList)
-	l.Register(dashboard.POST, "role/:id/permission/{pid}", controller.RolePermissionAdd)
-	l.Register(dashboard.GET, "role/:id/user", controller.RoleUserList)
-	l.Register(dashboard.POST, "permission", controller.PermissionAdd)
-	l.Register(dashboard.GET, "permission", controller.PermissionList)
-	l.Register(dashboard.POST, "permission/:id", controller.PermissionUpdate)
-	l.Register(dashboard.GET, "permission/:id", controller.PermissionShow)
-	l.Register(dashboard.DELETE, "permission/:id", controller.PermissionDelete)
-	l.Register(dashboard.GET, "permission/:id/role", controller.PermissionRoleList)
-	l.Register(dashboard.GET, "permission/:id/user", controller.PermissionUserList)
-
-	user := v0.Group("user", middleware.AuthCheck(l.Version), middleware.PermissionCheck(l.Version))
-	l.Register(user.GET, "property", controller.UserPropertyList)
-	l.Register(user.POST, "property", controller.UserPropertyAdd)
-	l.Register(user.POST, "property/:id", controller.UserPropertyUpdate)
-	l.Register(user.DELETE, "property/:id", controller.UserPropertyDelete)
-	l.Register(user.GET, "menu", controller.UserMenuList)
-	l.Register(user.POST, "menu", controller.UserMenuAdd)
-	l.Register(user.POST, "menu/:id", controller.UserMenuUpdate)
-	l.Register(user.DELETE, "menu/:id", controller.UserMenuDelete)
+	l.Register(monitor.GET, "pins", MonitorPins)
+	l.Register(monitor.GET, "address", MonitorAddress)
 
 	for _, v := range l.routers {
 		v.Handle(v.Name, v.HandleFunc(l.Version))
