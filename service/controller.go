@@ -16,7 +16,8 @@ type CodeMessage struct {
 // MonitorAddressList ...
 func MonitorAddressList(ver string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		strings, e := store.LRange(RedisKeyNameIPFSSwarmAddress, 0, -1).Result()
+
+		strings, e := store.HGetAll(RedisKeyNameIPFSSwarmAddress).Result()
 		log.Info("address list:", strings)
 		if e != nil {
 			Error(ctx, e)
@@ -30,13 +31,13 @@ func MonitorAddressList(ver string) gin.HandlerFunc {
 func MonitorAddressDelete(ver string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		address := ctx.PostForm("address")
-		c, e := store.LRem(RedisKeyNameIPFSSwarmAddress, 0, address).Result()
-		log.Info("address del:", c)
+		i, e := store.HDel(RedisKeyNameIPFSSwarmAddress, address).Result()
+		log.Info("address del:", i)
 		if e != nil {
 			Error(ctx, e)
 			return
 		}
-		Success(ctx, c)
+		Success(ctx, i)
 	}
 }
 
@@ -46,14 +47,12 @@ func MonitorAddressAdd(ver string) gin.HandlerFunc {
 		address := ctx.PostFormArray("address")
 		log.Info("address add:", address)
 		if address != nil {
-			var pdata []interface{}
 			for _, v := range address {
-				pdata = append(pdata, v)
-			}
-			e := store.LPush(RedisKeyNameIPFSSwarmAddress, pdata...).Err()
-			if e != nil {
-				Error(ctx, e)
-				return
+				e := store.HSet(RedisKeyNameIPFSSwarmAddress, v, 0).Err()
+				if e != nil {
+					Error(ctx, e)
+					return
+				}
 			}
 		}
 		Success(ctx, address)
@@ -63,7 +62,7 @@ func MonitorAddressAdd(ver string) gin.HandlerFunc {
 // MonitorPinsList ...
 func MonitorPinsList(ver string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		strings, e := store.LRange(RedisKeyNameIPFSPins, 0, -1).Result()
+		strings, e := store.HGetAll(RedisKeyNameIPFSPins).Result()
 		log.Info("pins list:", strings)
 		if e != nil {
 			Error(ctx, e)
@@ -77,13 +76,13 @@ func MonitorPinsList(ver string) gin.HandlerFunc {
 func MonitorPinsDelete(ver string) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		pins := ctx.PostForm("pins")
-		c, e := store.LRem(RedisKeyNameIPFSPins, 0, pins).Result()
-		log.Info("pins del:", c)
+		i, e := store.HDel(RedisKeyNameIPFSPins, pins).Result()
+		log.Info("pins del:", i)
 		if e != nil {
 			Error(ctx, e)
 			return
 		}
-		Success(ctx, c)
+		Success(ctx, i)
 	}
 }
 
@@ -93,15 +92,14 @@ func MonitorPinsAdd(ver string) gin.HandlerFunc {
 		pins := ctx.PostFormArray("pins")
 		log.Info("pins add:", pins)
 		if pins != nil {
-			var pdata []interface{}
 			for _, v := range pins {
-				pdata = append(pdata, v)
+				e := store.HSet(RedisKeyNameIPFSPins, v, 0).Err()
+				if e != nil {
+					Error(ctx, e)
+					return
+				}
 			}
-			e := store.LPush(RedisKeyNameIPFSPins, pdata...).Err()
-			if e != nil {
-				Error(ctx, e)
-				return
-			}
+
 		}
 		Success(ctx, pins)
 	}
