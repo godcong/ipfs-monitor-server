@@ -118,7 +118,18 @@ func DefaultConfig(runPath string) *Configure {
 			Location: url.QueryEscape("Asia/Shanghai"),
 			Charset:  "utf8mb4",
 		},
-		REST: REST{},
+		REST: REST{
+			Enable: true,
+			Type:   "",
+			Path:   "",
+			Port:   "",
+		},
+		GRPC: GRPC{
+			Enable: true,
+			Type:   "",
+			Path:   "",
+			Port:   "",
+		},
 	}
 }
 
