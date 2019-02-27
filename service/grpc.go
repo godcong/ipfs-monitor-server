@@ -33,12 +33,16 @@ type GRPCServer struct {
 
 // MonitorAddress ...
 func (s *GRPCServer) MonitorAddress(context.Context, *proto.MonitorRequest) (*proto.MonitorAddressReply, error) {
-	strings, e := s.redis.LRange(RedisKeyNameIPFSSwarmAddress, 0, -1).Result()
+	strings, e := s.redis.HGetAll(RedisKeyNameIPFSSwarmAddress).Result()
 	if e != nil {
 		return &proto.MonitorAddressReply{}, e
 	}
+	var ss []string
+	for key := range strings {
+		ss = append(ss, key)
+	}
 	return &proto.MonitorAddressReply{
-		Addresses: strings,
+		Addresses: ss,
 	}, nil
 }
 
@@ -62,12 +66,16 @@ func (s *GRPCServer) MonitorBootstrap(context.Context, *proto.MonitorRequest) (*
 
 // MonitorPin ...
 func (s *GRPCServer) MonitorPin(context.Context, *proto.MonitorRequest) (*proto.MonitorPinReply, error) {
-	strings, e := s.redis.LRange(RedisKeyNameIPFSPins, 0, -1).Result()
+	strings, e := s.redis.HGetAll(RedisKeyNameIPFSPins).Result()
 	if e != nil {
 		return &proto.MonitorPinReply{}, e
 	}
+	var ss []string
+	for key := range strings {
+		ss = append(ss, key)
+	}
 	return &proto.MonitorPinReply{
-		Pins: strings,
+		Pins: ss,
 	}, nil
 }
 
