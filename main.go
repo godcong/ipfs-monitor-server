@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/godcong/ipfs-monitor-server/config"
+	"github.com/godcong/ipfs-monitor-server/service"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
@@ -21,24 +23,22 @@ func main() {
 	dir, _ := filepath.Split(*logPath)
 	_ = os.MkdirAll(dir, os.ModePerm)
 
-	file, err := os.OpenFile(*logPath, os.O_SYNC|os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
-	if err != nil {
-		panic(err)
+	file, e := os.OpenFile(*logPath, os.O_SYNC|os.O_RDWR|os.O_CREATE|os.O_APPEND, os.ModePerm)
+	if e != nil {
+		panic(e)
 	}
 
 	log.SetOutput(io.MultiWriter(file, os.Stdout))
 
-	err = config.Initialize(*configPath)
-	if err != nil {
-		panic(err)
-	}
+	cfg := config.InitConfig(*configPath)
+
 
 	sigs := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	//start
-	service.Start()
+	service.Start(cfg)
 
 	go func() {
 		sig := <-sigs
