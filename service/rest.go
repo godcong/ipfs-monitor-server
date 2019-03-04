@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/godcong/ipfs-monitor-server/config"
+
 	log "github.com/sirupsen/logrus"
 	"net/http"
 )
@@ -21,7 +22,7 @@ func NewRestServer(cfg *config.Configure) *RestServer {
 	s := &RestServer{
 		Engine: gin.Default(),
 		config: cfg,
-		Port:   config.MustString(cfg.REST.Port, ":8080"),
+		Port:   config.MustString(cfg.REST.Port, ":7773"),
 		loader: NewRouteLoader("v0"),
 	}
 	return s
