@@ -105,7 +105,7 @@ func (c *Configure) LoadConfig(filePath string) *Configure {
 func DefaultConfig(runPath string) *Configure {
 	return &Configure{
 		WebToken: WebToken{
-			Key: "im-godcong-yelion",
+			Key: "im-godcong-yaelion",
 		},
 		Database: Database{
 			ShowSQL:  true,

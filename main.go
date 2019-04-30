@@ -17,7 +17,7 @@ var logPath = flag.String("log", "", "log path")
 func main() {
 	flag.Parse()
 
-	trait.InitElasticLog("ipfs-monitor-server", nil)
+	trait.InitRotateLog(*logPath)
 
 	err := config.Initialize(os.Args[0], *configPath)
 	if err != nil {
